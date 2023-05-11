@@ -1,47 +1,47 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { Resource } from '../models/resource.model';
 import { resourcesMock } from '../mocks/resource.mock';
 import { ResourceStatus } from 'src/enums/resource-status.enum';
 
 @Injectable()
 export class ResourceService {
-  private resources: Resource[] = resourcesMock;
+  constructor(
+    @InjectRepository(Resource)
+    private resourceRepository: Repository<Resource>,
+  ) {}
 
-  create(resource: Resource): Resource {
-    const newResource: Resource = {
-      id: this.resources.length + 1,
+  async create(resource: Resource) {
+    const newResource = await this.resourceRepository.insert({
+      id: resource.id,
+      name: resource.name,
       description: resource.description,
       characteristics: resource.characteristics,
       status: resource.status || ResourceStatus.AVAILABLE,
-    };
-    this.resources.push(newResource);
+    });
     return newResource;
   }
 
-  findAll(): Resource[] {
-    return this.resources;
+  async findAll() {
+    return await this.resourceRepository.find();
   }
 
-  findById(id: number): Resource {
-    return this.resources.find(resource => resource.id === id);
+  async findById(id: number) {
+    return await this.resourceRepository.findOneBy({ id });
   }
 
-  update(id: number, resource: Resource): Resource {
-    const index = this.resources.findIndex(resource => resource.id === id);
-    const updatedResource: Resource = {
-      id: id,
+  async update(id: number, resource: Resource) {
+    return await this.resourceRepository.update(id, {
+      name: resource.name,
       description: resource.description,
       characteristics: resource.characteristics,
       status: resource.status,
-    };
-    this.resources[index] = updatedResource;
-    return updatedResource;
+    });
   }
 
-  delete(id: number): Resource {
-    const index = this.resources.findIndex(resource => resource.id === id);
-    const deletedResource: Resource = this.resources[index];
-    this.resources.splice(index, 1);
-    return deletedResource;
+  async delete(id: number) {
+    return await this.resourceRepository.delete(id);
   }
 }

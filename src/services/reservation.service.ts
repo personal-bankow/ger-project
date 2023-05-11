@@ -1,44 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { Reservation } from '../models/reservation.model';
+import { Reservation } from '../entities/reservation.entity';
 import { reservationsMock } from 'src/mocks/reservation.mock';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ReservationService {
-  private reservations = reservationsMock;
+  constructor(
+    @InjectRepository(Reservation)
+    private reservationRepository: Repository<Reservation>,
+  ) {}
 
-  create(reservation: Reservation): Reservation {
-    const newReservation = {
-      id: this.reservations.length + 1,
-      resource: reservation.resource,
+  async create(reservation: Reservation) {
+    return await this.reservationRepository.insert({
+      id: Math.floor(Math.random() * 23),
+      resourceId: reservation.resourceId,
       note: reservation.note,
-    };
-    this.reservations.push(newReservation);
-    return newReservation;
+    });
   }
 
-  findAll(): Reservation[] {
-    return this.reservations;
+  async findAll() {
+    return await this.reservationRepository.find();
   }
 
-  findById(id: number): Reservation {
-    return this.reservations.find(reservation => reservation.id === id);
+  async findById(id: number) {
+    return await this.reservationRepository.findOneBy({ id });
   }
 
-  update(id: number, reservation: Reservation): Reservation {
-    const index = this.reservations.findIndex(reservation => reservation.id === id);
-    const updatedReservation = {
-      id: id,
-      resource: reservation.resource,
+  async update(id: number, reservation: Reservation) {
+    return await this.reservationRepository.update(id, {
+      resourceId: reservation.resourceId,
       note: reservation.note,
-    };
-    this.reservations[index] = updatedReservation;
-    return updatedReservation;
+    });
   }
 
-  delete(id: number): Reservation {
-    const index = this.reservations.findIndex(reservation => reservation.id === id);
-    const deletedReservation = this.reservations[index];
-    this.reservations.splice(index, 1);
-    return deletedReservation;
+  async delete(id: number) {
+    return await this.reservationRepository.delete(id);
   }
 }
