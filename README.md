@@ -1,3 +1,3 @@
 # API, DevOps, Frontend.
 
-AWS deploy prod
+AWS deploy prod(ID,Secret and Session Token)
